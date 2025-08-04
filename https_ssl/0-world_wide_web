@@ -1,24 +1,17 @@
 #!/usr/bin/env bash
-# This script checks DNS A records for given subdomains of a domain
-
-# shellcheck disable=SC2086
-
-get_record_info() {
-    local full_subdomain=$1
-    dig ${full_subdomain} +short | awk -v subdomain_name="$full_subdomain" '
-    BEGIN {record_type="A"}
-    NF {
-        print "The subdomain " subdomain_name " is a " record_type " record and points to " $1
-    }'
-}
-
-domain=$1
-subdomain=$2
-
-if [ -n "$subdomain" ]; then
-    get_record_info "$subdomain.$domain"
-else
-    for sub in www lb-01 web-01 web-02; do
-        get_record_info "$sub.$domain"
-    done
+#transfer file from a client to a server
+if [ "$#" -ne 4 ]; then
+    echo "Usage: 0-transfer_file PATH_TO_FILE IP USERNAME PATH_TO_SSH_KEY"
+    exit 1
 fi
+
+# Assign variables from arguments
+FILE_PATH="$1"
+SERVER_IP="$2"
+USERNAME="$3"
+SSH_KEY_PATH="$4"
+
+# Use scp to transfer the file with host key checking disabled
+scp -o StrictHostKeyChecking=no -i "$SSH_KEY_PATH" "$FILE_PATH" "$USERNAME@$SERVER_IP:~/"
+# Exit with the status of the scp command
+exit $?
