@@ -1,0 +1,23 @@
+#!/usr/bin/env bash
+# This script checks DNS A records for given subdomains of a domain
+
+get_record_info() {
+    local full_subdomain=$1
+    dig ${full_subdomain} +short | awk -v sub="$full_subdomain" '
+    BEGIN {record_type="A"}
+    NF {
+        print "The subdomain " sub " is a " record_type " record and points to " $1
+    }'
+}
+
+domain=$1
+subdomain=$2
+
+# If a subdomain is passed, only check that one
+if [ -n "$subdomain" ]; then
+    get_record_info "$subdomain.$domain"
+else
+    for sub in www lb-01 web-01 web-02; do
+        get_record_info "$sub.$domain"
+    done
+fi
