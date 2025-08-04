@@ -1,19 +1,20 @@
 #!/usr/bin/env bash
 # This script checks DNS A records for given subdomains of a domain
 
+# shellcheck disable=SC2086
+
 get_record_info() {
     local full_subdomain=$1
-    dig ${full_subdomain} +short | awk -v sub="$full_subdomain" '
+    dig ${full_subdomain} +short | awk -v subdomain_name="$full_subdomain" '
     BEGIN {record_type="A"}
     NF {
-        print "The subdomain " sub " is a " record_type " record and points to " $1
+        print "The subdomain " subdomain_name " is a " record_type " record and points to " $1
     }'
 }
 
 domain=$1
 subdomain=$2
 
-# If a subdomain is passed, only check that one
 if [ -n "$subdomain" ]; then
     get_record_info "$subdomain.$domain"
 else
